@@ -44,7 +44,7 @@ function displaySubscriptions() {
     if (subscriptionList) {
         subscriptionList.innerHTML = "";
 
-        subscriptions.forEach(function(subscription, index) {
+        _.forEach(subscriptions, function(subscription, index) {
             const row = document.createElement("tr");
 
             const values = [
@@ -94,13 +94,14 @@ function updateSummary() {
     }
 
     if (expiredSubscriptions) {
-        const expired = subscriptions.filter(function(subscription) {
+        const expired = _.filter(subscriptions, function(subscription) {
             return getStatus(subscription.renewalDate) === "Expired";
         });
 
         expiredSubscriptions.textContent = expired.length;
     }
 }
+
 
 displaySubscriptions();
 
