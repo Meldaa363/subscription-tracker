@@ -180,4 +180,16 @@ nav a:hover {
     background-color: #263a5b;
     color: white;
 }
+.back-button {
+    display: inline-block;
+    background-color: #263a5b;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin: 20px;
+}
 
+.back-button:hover {
+    background-color: #1a2942;
+}
