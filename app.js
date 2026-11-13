@@ -1,51 +1,30 @@
 
-const form = document.getElementById("subscriptionForm");
-const subscriptionList = document.getElementById("subscriptionList");
+$(document).ready(function () {
 
-const totalSubscriptions = document.getElementById("totalSubscriptions");
-const expiredSubscriptions = document.getElementById("expiredSubscriptions");
+    const form = $("#subscriptionForm");
+    const subscriptionList = $("#subscriptionList");
 
-let subscriptions = JSON.parse(localStorage.getItem("subscriptions")) || [];
+    let subscriptions = JSON.parse(localStorage.getItem("subscriptions")) || [];
 
-function saveSubscriptions() {
-    localStorage.setItem("subscriptions", JSON.stringify(subscriptions));
-}
+    function saveSubscriptions() {
+        localStorage.setItem("subscriptions", JSON.stringify(subscriptions));
+    }
 
-function getStatus(renewalDate) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    function getStatus(renewalDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    const renewal = new Date(renewalDate + "T00:00:00");
+        const renewal = new Date(renewalDate + "T00:00:00");
 
-    return renewal < today ? "Expired" : "Active";
-}
+        return renewal < today ? "Expired" : "Active";
+    }
 
-if (form) {
-    form.addEventListener("submit", function(event) {
-        event.preventDefault();
+    function displaySubscriptions() {
+        subscriptionList.empty();
 
-        const subscription = {
-            service: document.getElementById("service").value,
-            provider: document.getElementById("provider").value,
-            subscriber: document.getElementById("subscriber").value,
-            renewalDate: document.getElementById("renewalDate").value,
-            category: document.getElementById("category").value
-        };
+        $.each(subscriptions, function (index, subscription) {
 
-        subscriptions.push(subscription);
-
-        saveSubscriptions();
-        displaySubscriptions();
-        form.reset();
-    });
-}
-
-function displaySubscriptions() {
-    if (subscriptionList) {
-        subscriptionList.innerHTML = "";
-
-        _.forEach(subscriptions, function(subscription, index) {
-            const row = document.createElement("tr");
+            const row = $("<tr>");
 
             const values = [
                 subscription.service,
@@ -56,52 +35,57 @@ function displaySubscriptions() {
                 getStatus(subscription.renewalDate)
             ];
 
-            values.forEach(function(value) {
-                const cell = document.createElement("td");
-                cell.textContent = value;
-                row.appendChild(cell);
+            $.each(values, function (i, value) {
+                row.append($("<td>").text(value));
             });
 
-            const actionCell = document.createElement("td");
-            const deleteButton = document.createElement("button");
+            const deleteButton = $("<button>")
+                .text("Delete")
+                .addClass("btn btn-danger btn-sm");
 
-            deleteButton.textContent = "Delete";
-
-            deleteButton.addEventListener("click", function() {
-                deleteSubscription(index);
+            deleteButton.on("click", function () {
+                subscriptions.splice(index, 1);
+                saveSubscriptions();
+                displaySubscriptions();
             });
 
-            actionCell.appendChild(deleteButton);
-            row.appendChild(actionCell);
-
-            subscriptionList.appendChild(row);
+            row.append($("<td>").append(deleteButton));
+            subscriptionList.append(row);
         });
+
+        updateSummary();
     }
 
-    updateSummary();
-}
+    function updateSummary() {
+        $("#totalSubscriptions").text(subscriptions.length);
 
-function deleteSubscription(index) {
-    subscriptions.splice(index, 1);
-
-    saveSubscriptions();
-    displaySubscriptions();
-}
-
-function updateSummary() {
-    if (totalSubscriptions) {
-        totalSubscriptions.textContent = subscriptions.length;
-    }
-
-    if (expiredSubscriptions) {
-        const expired = _.filter(subscriptions, function(subscription) {
+        const expired = $.grep(subscriptions, function (subscription) {
             return getStatus(subscription.renewalDate) === "Expired";
         });
 
-        expiredSubscriptions.textContent = expired.length;
+        $("#expiredSubscriptions").text(expired.length);
     }
-}
 
+    form.on("submit", function (event) {
+        event.preventDefault();
 
-displaySubscriptions();
+        const subscription = {
+            service: $("#service").val(),
+            provider: $("#provider").val(),
+            subscriber: $("#subscriber").val(),
+            renewalDate: $("#renewalDate").val(),
+            category: $("#category").val()
+        };
+
+        subscriptions.push(subscription);
+
+        saveSubscriptions();
+        form[0].reset();
+        displaySubscriptions();
+    });
+
+    displaySubscriptions();
+
+});
+
 
